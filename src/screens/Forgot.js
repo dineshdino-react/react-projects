@@ -1,44 +1,36 @@
 import { View, Text, StyleSheet, TextInput, Image, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
-
-
 const Forgot = ({navigation}) => {
   const [UserName, SetUserName]=useState("");
   const [Password, SetPassword]=useState("");
-  //console.debug(UserName, Password);
+
   return (
     <View style = {styles.logintop}>
       <Image style = {styles.img2} source={require('../images/img2.png' )} />
       <Text style={styles.below}>Forgot password</Text>
-      
       <View style={styles.box}>
         <View style={styles.inputbox}>
         <TextInput placeholder="Name"
          placeholderTextColor={'#2f2f2f'}
-          style={styles.input} 
+          style={styles.input}
           value={UserName}
            onChangeText={(actualData)=>SetUserName(actualData)}>
-
         </TextInput>
-
         <TextInput 
         secureTextEntry={true}
          placeholder="Password"
           placeholderTextColor={'#2f2f2f'} 
           style={styles.secondinput} value={Password}
           onChangeText={(actualData)=>SetPassword(actualData)}></TextInput>
-        
         <TouchableOpacity style={styles.loginbtn} >
-          <Text  style={styles.start} onPress={()=>navigation.navigate.Goback()}>proceed</Text>
+          <Text  style={styles.start} onPress={()=>navigation.goBack()}>proceed</Text>
         </TouchableOpacity>
         </View>
         </View>
-      
     </View>
   )
 }
 export default Forgot
-
 const styles = StyleSheet.create({
   img2:{
    left:25,

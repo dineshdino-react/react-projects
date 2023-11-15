@@ -7,21 +7,27 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
-import {useContext} from 'react';
-import {AuthContext} from '../../Context/AuthContext';
-
 import SVGImg from '../images/img1.svg';
 import SVGimg4 from '../images/img5.svg';
 import SVGimg5 from '../images/arrow.svg';
+import Surgeon from '../images/surgeon.png';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import ParallaxCarousel from './Parallaxlayers';
 
 const Homepage = ({navigation}) => {
+  
+ 
   return (
+    
     <SafeAreaView>
       <View style={styles.homescreen}>
         <View style={styles.header}>
-          <SVGImg style={styles.img2} />
+         <SVGImg style={styles.img2} /> 
+          
+          <TouchableOpacity onPress={()=>navigation.openDrawer()}>
           <Image style={styles.img3} source={require('../images/op.png')} />
+          </TouchableOpacity>
+         
         </View>
         <View style={styles.search}>
           <TextInput
@@ -33,8 +39,11 @@ const Homepage = ({navigation}) => {
         </View>
         <View style={styles.body}>
           <View style={styles.upperpart}>
-            <SVGimg4 style={styles.img5} />
-            <View style={styles.learn}>
+          
+         
+              <View style={{top:30}}><ParallaxCarousel /></View>
+            
+           { /*<View style={styles.learn}>
               <TouchableOpacity>
                 <Text style={styles.L}>L</Text>
               </TouchableOpacity>
@@ -42,15 +51,33 @@ const Homepage = ({navigation}) => {
                 <Text style={styles.abt}>earn Anesthesia</Text>
               </TouchableOpacity>
               <SVGimg5 style={styles.arr} />
-            </View>
+            </View>*/}
           </View>
         </View>
       </View>
     </SafeAreaView>
+   
+   
   );
 };
 export default Homepage;
 const styles = StyleSheet.create({
+  imagebox:{
+   height:350,
+   width:"100%",
+   overflow:'hidden',
+   justifyContent:"center",
+   alignContent:"center",
+   backgroundColor:"#fff",
+   top:20,
+   padding:30,
+   borderRadius:20,
+   
+  },
+  imagelogo:{
+    width:300,
+    height:338,
+  },
   arr: {
     top: 57,
     left: 10,
@@ -95,6 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 50,
     paddingLeft: 20,
+    fontFamily: 'SFProDisplay-Regular',
   },
   homescreen: {
     backgroundColor: '#F0ECEC',

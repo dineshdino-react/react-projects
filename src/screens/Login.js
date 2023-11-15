@@ -6,60 +6,71 @@ import {
   Image,
   TouchableOpacity,
   Alert,
-  
-  
 } from 'react-native';
 import React, {useState} from 'react';
 import SVGImg from '../images/img1.svg';
+import {API_SERVER_URL} from './config';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
-import { useEffect } from 'react';
-
+import {useEffect, useContext} from 'react';
+import {AuthContext} from '../../Context/AuthContext';
 
 const Login = ({navigate}) => {
-  const [UserName, SetUserName] = useState('');
-  const [Password, SetPassword] = useState('');
+  {
+    /*const [token , setToken] = useState('');*/
+  }
   const navigation = useNavigation();
-  useEffect(() => {
+  const {login} = useContext(AuthContext);
+  const {UserName, Password, SetUserName, SetPassword} = useContext(AuthContext);
+  {
+    /* // checkloginstatus
+ useEffect(() => {
    const checkLoginStatus = async()=>{
     try{
-        const token = await AsyncStorage.getItem("authtoken")
-        if(token ){
-          navigation.replace("Homepage");
+      const storedtoken = await AsyncStorage.getItem("authtoken")
+        if(storedtoken){
+          setToken(storedtoken);
         }
     }catch(err){
       console.log("error message",err)
     }
    }
    checkLoginStatus();
-  }, [])
-  
-  const HandleLogin = () => {
+  }, []);*/
+  }
+
+  // handlelogin
+  {
+    /*const HandleLogin = async () => {
     const user = {
       UserName : UserName,
       Password: Password,
     }
-
     // send a post req to backend API
-    axios.post("http://192.168.29.185:8000/login",user).then(response => {
-      console.log(response);
-      const token = response.data.token;
-      if(response && response.data && response.data.token){
-        AsyncStorage.setItem("authtoken",token);
-        
+    try {
+      // Send a POST request to the backend API
+      const response = await axios.post(`${API_SERVER_URL}/login`, user);
+      if (response.data && response.data.token) {
+        // Save the authentication token in AsyncStorage
+        await AsyncStorage.setItem('authtoken', response.data.token);
+        Alert.alert('Login successful', 'You have logged in successfully');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'navi' }],
+        });
+      } else {
+        Alert.alert('Login failed', 'Invalid credentials. Please try again.');
       }
-      navigation.replace("Homepage");
-      Alert.alert('login successful', 'you have logged in successfully');
-      
-    }).catch((error)=>{
-      Alert.alert("Login failed");
-      console.log("login Failed",error)
-    })
-  };
+    } catch (error) {
+      console.log('Login Failed', error);
+      Alert.alert('Login failed', 'An error occurred while logging in.');
+    } 
+  };*/
+  }
   return (
     <View style={styles.logintop}>
-      <SVGImg style={styles.img2} />
+      {/*  <SVGImg style={styles.img2} /> */}
       <Text style={styles.below}>Welcome !</Text>
       <Text style={styles.btext}>Please login to continue</Text>
       <View style={styles.box}>
@@ -83,10 +94,8 @@ const Login = ({navigate}) => {
             onPress={() => navigation.navigate('Forgot')}>
             Forgot password ?
           </Text>
-          <TouchableOpacity style={styles.loginbtn} onPress={HandleLogin}>
-            <Text style={styles.start} >
-              Login
-            </Text>
+          <TouchableOpacity style={styles.loginbtn} onPress={login}>
+            <Text style={styles.start}>Login</Text>
           </TouchableOpacity>
         </View>
       </View>

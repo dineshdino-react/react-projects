@@ -5,11 +5,10 @@ import SVGImg from "../images/img1.svg";
 const Welcome = ({navigation}) => {
   return (
     <View style={styles.frame}>
-      
-     
+        
       <Text style={styles.fullform}>Saveetha Medical College and Hospitals</Text>
       <View style = {styles.logos}>
-      <SVGImg style={styles.img2} />
+    <SVGImg style={styles.img2} /> 
       <Image
         style={styles.tinyLogo}
         source={require('../images/img.png')}

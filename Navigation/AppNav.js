@@ -1,20 +1,26 @@
-
-import React from 'react'
-import { Login, Welcome, Forgot, Homepage  } from '../src/screens'
+import { StyleSheet, Text, View , ActivityIndicator} from 'react-native'
+import React ,{useContext, useEffect, useState}from 'react'
+import AuthStack from './AuthStack'
+import Drawernav from './DrawerNav'
 import { NavigationContainer } from '@react-navigation/native'
-import { createNativeStackNavigator} from '@react-navigation/native-stack'
-const Stack = createNativeStackNavigator();
-const AppNav = () => {
+import { AuthContext } from '../Context/AuthContext'
+
+const AppNav= () => {
+    const {usertoken,IsLoading} = useContext(AuthContext);
+    if (IsLoading) {
+        return (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#ff7373" />
+          </View>
+        );
+      }  
   return (
     <NavigationContainer>
-    <Stack.Navigator screenOptions={{headerShown:false}}>
-      <Stack.Screen name='Welcome' component={Welcome} />
-      <Stack.Screen name='Login' component={Login} />
-      <Stack.Screen name='Forgot' component={Forgot} />
-      <Stack.Screen name='Homepage' component={Homepage} />
-    </Stack.Navigator>
-   </NavigationContainer>
+        { usertoken !== null ? <Drawernav/> : <AuthStack/>} 
+    </NavigationContainer>
   )
 }
 
 export default AppNav
+
+const styles = StyleSheet.create({})

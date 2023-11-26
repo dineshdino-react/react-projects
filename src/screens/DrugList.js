@@ -144,7 +144,17 @@ const DrugList = ({navigation}) => {
                 </View>
                 <View style={styles.patientcontent}>
                   <Text style={styles.tcontent}>{item.drugname}</Text>
-                  <Text>Dosage : {item.dosage} </Text>
+                  <Text>
+                    Dosage :
+                    {item.dosage.min.value !== 0 && (
+                      <Text> {item.dosage.min.value}</Text>
+                    )}
+                    {item.dosage.min.value !== 0 &&
+                      item.dosage.max.value !== 0 && <Text> - </Text>}
+                    {item.dosage.max.value !== 0 && (
+                      <Text>{item.dosage.max.value}</Text>
+                    )}
+                  </Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -226,9 +236,9 @@ const styles = StyleSheet.create({
   },
 
   sv: {
-    height: '64%',
+    height: '54%',
     ...Platform.select({
-      ios: {height: '63.4%'},
+      ios: {height: '60.5%'},
     }),
   },
   tcontent: {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { API_SERVER_URL } from './config';
+import {API_SERVER_URL} from './config';
 
 const AddDrug = () => {
   const [filledFields, setFilledFields] = useState(0);
@@ -22,19 +22,40 @@ const AddDrug = () => {
     drugname: '',
     category: '',
     agegroup: '',
-    dosage: 0,
-    fataldosage: 0,
+    dosage: {min: {value: 0, unit: ''}, max: {value: 0, unit: ''}},
+    fataldosage: {value :0 , unit:''},
   });
 
   const [isSaveButtonActive, setIsSaveButtonActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (field, value) => {
-    setDrugData({ ...drugData, [field]: value });
+    if (field === 'dosageMin' || field === 'dosageMax') {
+      const unit = value.toLowerCase().includes('g') ? 'g/kg' : 'mg/kg';
+      const numericValue = parseFloat(value);
+  
+      setDrugData({
+        ...drugData,
+        dosage: {
+          ...drugData.dosage,
+          [field === 'dosageMin' ? 'min' : 'max']: { value: numericValue, unit },
+        },
+      });
+    } else if (field === 'fataldosage') {
+      const unit = value.toLowerCase().includes('mg') ? 'g/kg' : 'mg/kg';
+      const numericValue = parseFloat(value);
+  
+      setDrugData({
+        ...drugData,
+        fataldosage: { value: numericValue, unit },
+      });
+    } else {
+      setDrugData({ ...drugData, [field]: value });
+    }
 
     // Update the filledFields state based on the filled input fields
     if (value !== '' && value !== 0) {
-      setFilledFields((prevFilledFields) => prevFilledFields + 1);
+      setFilledFields(prevFilledFields => prevFilledFields + 1);
     }
   };
 
@@ -58,7 +79,7 @@ const AddDrug = () => {
 
   const handleSubmit = async () => {
     try {
-      await axios.post(`${API_SERVER_URL}/drugs`, drugData).then((response) => {
+      await axios.post(`${API_SERVER_URL}/drugs`, drugData).then(response => {
         console.log('Drug details saved:', response.data);
       });
       // Handle success or navigate to another screen
@@ -79,51 +100,55 @@ const AddDrug = () => {
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : null}
-        style={styles.container}
-      >
+        style={styles.container}>
         <ScrollView
           contentContainerStyle={styles.scrollViewContent}
-          keyboardShouldPersistTaps="handled"
-        >
+          keyboardShouldPersistTaps="handled">
           <View style={styles.body}>
             <View style={styles.mainblock}>
               <View style={styles.whitebox}>
-                <View >
-                 
-                </View>
+                <View></View>
                 <View style={styles.header}>
                   <Text style={styles.txt}>Add Drug</Text>
                 </View>
                 <TextInput
                   placeholder="Drug Name *"
                   placeholderTextColor={'#a6a6a6'}
-                  onChangeText={(text) => handleInputChange('drugname', text)}
+                  onChangeText={text => handleInputChange('drugname', text)}
                   style={styles.inputbox}
                 />
                 <TextInput
                   placeholder="Category*"
                   placeholderTextColor={'#a6a6a6'}
-                  onChangeText={(text) => handleInputChange('category', text)}
+                  onChangeText={text => handleInputChange('category', text)}
                   style={styles.inputbox}
                 />
                 <TextInput
                   placeholder="Age Group "
                   placeholderTextColor={'#a6a6a6'}
-                  onChangeText={(text) => handleInputChange('agegroup', text)}
+                  onChangeText={text => handleInputChange('agegroup', text)}
                   style={styles.inputbox}
                 />
                 <TextInput
-                  placeholder="Dosage *"
+                  placeholder="Dosage Min *"
                   placeholderTextColor={'#a6a6a6'}
-                  onChangeText={(Number) => handleInputChange('dosage', Number)}
+                  onChangeText={text => handleInputChange('dosageMin', text)}
+                  style={styles.inputbox}
+                />
+
+                <TextInput
+                  placeholder="Dosage Max *"
+                  placeholderTextColor={'#a6a6a6'}
+                  onChangeText={text => handleInputChange('dosageMax', text)}
                   style={styles.inputbox}
                 />
                 <TextInput
                   placeholder="Fatal Dosage"
                   placeholderTextColor={'#a6a6a6'}
-                  onChangeText={(Number) =>
-                    handleInputChange('fataldosage', Number)
-                  }
+                  onChangeText={text => handleInputChange('fataldosage', text)}
+                  // onChangeText={Number =>
+                  //   handleInputChange('fataldosage', Number)
+                  // }
                   style={styles.inputbox}
                 />
 
@@ -134,8 +159,7 @@ const AddDrug = () => {
                       : styles.disabledSaveButton
                   }
                   onPress={handleSubmit}
-                  disabled={!isSaveButtonActive || isLoading}
-                >
+                  disabled={!isSaveButtonActive || isLoading}>
                   {isLoading ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
@@ -157,8 +181,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#d9d9d9',
     borderRadius: 20,
     marginVertical: 10,
-    right:170,
-
+    right: 170,
   },
   container: {
     flex: 1,
@@ -170,7 +193,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 20,
     ...Platform.select({
-      android: { paddingTop: 50 },
+      android: {paddingTop: 50},
     }),
   },
   body: {

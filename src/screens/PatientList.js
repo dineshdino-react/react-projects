@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   FlatList,
   RefreshControl,
+  StatusBar,
 } from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {FontAwesome} from '@expo/vector-icons';
@@ -148,7 +149,11 @@ const PatientList = ({navigation}) => {
                     </View>
                   </View>
                   <View style={styles.patientcontent}>
-                    <Text style={[styles.tcontent, styles.text]}>{item.name}</Text>
+                    <View style={{flexDirection:"row"}}>
+                    <Text style={[styles.tcontent, styles.text]}>{item.name} </Text>
+                    <Text style={{color:"red"}}> P_Id :({item.patientId})</Text>
+                    </View>
+                    
                     <Text style={{fontFamily:"SFProDisplay-Regular"}}>Weight: {item.weight} kg</Text>
                   </View>
                 </TouchableOpacity>

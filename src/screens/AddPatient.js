@@ -25,6 +25,7 @@ const Addpatient = () => {
     gender: '',
     mobile: 0,
     treatmentType: '',
+    haemoglobin:0,
     age: 0,
     bloodGroup: '',
     weight: 0,
@@ -177,19 +178,25 @@ const Addpatient = () => {
                   style={styles.inputbox}
                 />
                 <TextInput
+                  placeholder="Haemoglobin *"
+                  placeholderTextColor={'#a6a6a6'}
+                  onChangeText={Number => handleInputChange('haemoglobin', Number)}
+                  style={styles.inputbox}
+                />
+                <TextInput
                   placeholder="BloodGroup *"
                   placeholderTextColor={'#a6a6a6'}
                   onChangeText={text => handleInputChange('bloodGroup', text)}
                   style={styles.inputbox}
                 />
                 <TextInput
-                  placeholder="Weight *"
+                  placeholder="Weight in kg *"
                   placeholderTextColor={'#a6a6a6'}
                   onChangeText={Number => handleInputChange('weight', Number)}
                   style={styles.inputbox}
                 />
                 <TextInput
-                  placeholder="Height *"
+                  placeholder="Height in cm*"
                   placeholderTextColor={'#a6a6a6'}
                   onChangeText={Number => handleInputChange('height', Number)}
                   style={styles.inputbox}

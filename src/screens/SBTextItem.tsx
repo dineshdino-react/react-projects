@@ -10,7 +10,8 @@ interface Props {
 export const SBTextItem: React.FC<Props> = ({ style, index }) => {
   return (
     <View style={[styles.container, style]}>
-      {typeof index === "number" && <Text style={{ fontSize: 30, color: "black" }}>{index}</Text>}
+      {typeof index === "number" && <Text style={{ fontSize: 30, color: "#ff7373" }}>{index}</Text>}
+      {typeof index === "number" && <Text style={{ fontSize: 16, color: "#2f2f2f" }}>{index}</Text>}
     </View>
   );
 };

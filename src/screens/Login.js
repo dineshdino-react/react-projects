@@ -15,14 +15,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 import {useEffect, useContext} from 'react';
 import {AuthContext} from '../../Context/AuthContext';
-
+import {Ionicons} from '@expo/vector-icons';
 const Login = ({navigate}) => {
   {
     /*const [token , setToken] = useState('');*/
   }
   const navigation = useNavigation();
   const {login} = useContext(AuthContext);
-  const {UserName, Password, SetUserName, SetPassword} = useContext(AuthContext);
+  const {UserName, Password, SetUserName, SetPassword} =
+    useContext(AuthContext);
+  const [showPassword, setShowPassword] = useState(false);
   {
     /* // checkloginstatus
  useEffect(() => {
@@ -82,13 +84,24 @@ const Login = ({navigate}) => {
             value={UserName}
             onChangeText={actualData => SetUserName(actualData)}></TextInput>
 
-          <TextInput
-            secureTextEntry={true}
-            placeholder="Password"
-            placeholderTextColor={'#2f2f2f'}
-            style={styles.secondinput}
-            value={Password}
-            onChangeText={actualData => SetPassword(actualData)}></TextInput>
+          <View style={{position: 'relative'}}>
+            <TextInput
+              secureTextEntry={!showPassword}
+              placeholder="Password"
+              placeholderTextColor={'#2f2f2f'}
+              style={styles.secondinput}
+              value={Password}
+              onChangeText={actualData => SetPassword(actualData)}></TextInput>
+            <TouchableOpacity
+              style={{position: 'absolute', top: 56, right: 20}}
+              onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons
+                name={showPassword ? 'eye' : 'eye-off'}
+                size={18}
+                color="#2f2f2f"
+              />
+            </TouchableOpacity>
+          </View>
           <Text
             style={styles.forgot}
             onPress={() => navigation.navigate('Forgot')}>

@@ -25,7 +25,7 @@ export const SBImageItem: React.FC<Props> = ({
 }) => {
   const index = (_index || 0) + 1;
   const source = React.useRef<ImageURISource>({
-    uri: `https://picsum.photos/id/${index}/400/300`,
+    uri: '',
   }).current;
 
   return (
@@ -60,10 +60,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   image: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0,
+    
   },
 });

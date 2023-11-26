@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
-import NavigationContainer from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import {useState, useEffect} from 'react';
 import {FontAwesome} from '@expo/vector-icons';
@@ -24,12 +24,57 @@ import socketIOClient from 'socket.io-client';
 const Stack = createStackNavigator();
 
 const PatientDetails = ({route}) => {
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [drugs, SetDrug] = useState([]);
   const [filteredDrugs, setFilteredDrugs] = useState([]);
+
   const socket = socketIOClient(`${API_SERVER_SOCKET}`);
 
   const navigation = useNavigation();
+
+
+  useEffect(() => {
+    // Update recently viewed patients list in AsyncStorage
+    const updateRecentlyViewed = async () => {
+      try {
+        const recentlyViewedData = await AsyncStorage.getItem('recentlyViewed');
+        let recentlyViewedPatients = recentlyViewedData
+          ? JSON.parse(recentlyViewedData)
+          : [];
+    
+        // Check if the patient is already in the list
+        const existingPatientIndex = recentlyViewedPatients.findIndex(
+          (p) => p._id === patient._id
+        );
+    
+        if (existingPatientIndex !== -1) {
+          // Update the timestamp for the existing patient
+          recentlyViewedPatients[existingPatientIndex].timestamp = new Date().toISOString();
+        } else {
+          // Add patient to the beginning of the list
+          recentlyViewedPatients = [
+            { ...patient, timestamp: new Date().toISOString() },
+            ...recentlyViewedPatients.slice(0, 4), // Limit the list to the last 5 viewed patients
+          ];
+        }
+    
+        // Update AsyncStorage
+        await AsyncStorage.setItem(
+          'recentlyViewed',
+          JSON.stringify(recentlyViewedPatients)
+        );
+      } catch (error) {
+        console.error('Error updating recently viewed patients:', error);
+      }
+    };
+    // Call the updateRecentlyViewed function when the patient changes
+    updateRecentlyViewed();
+  }, [patient]); // Add patient as a dependency
+  
+  // ...
+  
+
 
   const handleDrugClick = item => {
     // Navigate to the "PatientDrugDetail" page and pass the drug data as a parameter
@@ -69,7 +114,25 @@ const PatientDetails = ({route}) => {
   }, []);
 
   const {patient} = route.params;
+  const bmiheight = patient.height;
+  const bmiweight = patient.weight;
+  const convertheight = bmiheight / 100; // convertion from cm to m
+  const BMI = bmiweight / (convertheight * convertheight);
+  const fixedbmi = BMI.toPrecision(3);
 
+  const getBMIDetails = bmi => {
+    if (bmi < 18.5) {
+      return {color: 'red', category: 'Underweight'};
+    } else if (bmi >= 18.5 && bmi < 25) {
+      return {color: 'green', category: 'Normal weight'};
+    } else if (bmi >= 25 && bmi < 30) {
+      return {color: '#3f0e0e', category: 'Overweight'};
+    } else {
+      return {color: 'blue', category: 'Obesity'};
+    }
+  };
+  // Get the color and category based on BMI value
+  const bmiDetails = getBMIDetails(parseFloat(fixedbmi));
   return (
     <SafeAreaView style={{flex: 1}}>
       <View style={styles.outerbox}>
@@ -90,8 +153,36 @@ const PatientDetails = ({route}) => {
                   <Text style={styles.tcontent}>
                     {patient.name.toUpperCase()}
                   </Text>
-                  <Text>{patient.treatmentType}</Text>
+                  <Text style={{color:"#f44336"}}>{patient.treatmentType}</Text>
                 </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    left: 200,
+                    position: 'absolute',
+                  }}>
+                  <Text
+                    style={{fontWeight: 'bold', lineHeight: 22, fontSize: 18}}>
+                    BMI :{' '}
+                  </Text>
+                  <Text style={{color: bmiDetails.color, fontSize: 18}}>
+                    {fixedbmi}
+                  </Text>
+                  <Text style={{fontSize: 16, lineHeight: 22}}> kg/m</Text>
+                  <Text
+                    style={{fontSize: 12, fontWeight: '700', lineHeight: 14}}>
+                    2
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    color: bmiDetails.color,
+                    marginTop: 20,
+                    left: 200,
+                    position: 'absolute',
+                  }}>
+                  ( {bmiDetails.category} )
+                </Text>
               </View>
               <View style={styles.bodycontent}>
                 <Text>Age: {patient.age}</Text>
@@ -100,7 +191,7 @@ const PatientDetails = ({route}) => {
                 <View style={styles.lineStyle} />
                 <View>
                   <Text style={styles.last}>Weight : {patient.weight} kg</Text>
-                  <Text>Height : {patient.height}</Text>
+                  <Text>Height : {patient.height} cm</Text>
                 </View>
               </View>
             </View>
@@ -122,11 +213,6 @@ const PatientDetails = ({route}) => {
                     color="#ff7373"
                   />
                 </View>
-                <TouchableOpacity>
-                  <View style={styles.btnstyle}>
-                    <Text style={styles.btn}>Calculate</Text>
-                  </View>
-                </TouchableOpacity>
               </View>
             </View>
             <View style={styles.body}>
@@ -135,7 +221,8 @@ const PatientDetails = ({route}) => {
                 <Text style={styles.head}>Dosage</Text>
               </View>
 
-              <FlatList style={{height:"54%"}}
+              <FlatList
+                style={{height: '54%'}}
                 data={filteredDrugs}
                 keyExtractor={item => item._id.toString()}
                 renderItem={({item}) => (
@@ -152,7 +239,20 @@ const PatientDetails = ({route}) => {
                         <Text style={styles.tcontents}>{item.drugname}</Text>
                       </View>
                       <View style={styles.drugcontent}>
-                        <Text style={styles.dosagestyle}> {item.dosage} </Text>
+                        {item.dosage.min.value !== 0 && (
+                          <Text>{item.dosage.min.value}</Text>
+                        )}
+
+                        {item.dosage.min.value !== 0 &&
+                          item.dosage.max.value !== 0 && <Text> - </Text>}
+
+                        {item.dosage.max.value !== 0 && (
+                          <Text>{item.dosage.max.value}</Text>
+                        )}
+
+                        {item.dosage.min.unit && (
+                          <Text> {item.dosage.min.unit}</Text>
+                        )}
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -185,7 +285,7 @@ const styles = StyleSheet.create({
 
   head: {
     paddingLeft: 10,
-    paddingRight: 10,
+    paddingRight: 15,
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -205,7 +305,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 40,
     backgroundColor: '#f0f0f0',
-    width: '68%',
+    width: '100%',
     paddingLeft: 20,
     justifyContent: 'space-between',
     borderRadius: 20,
@@ -242,14 +342,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: 20,
-    paddingBottom:20,
+    paddingBottom: 20,
     alignItems: 'center',
-  
   },
   patientcontent: {
     paddingLeft: 20,
   },
   drugcontent: {
+    paddingTop: 10,
     paddingLeft: 20,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
@@ -267,18 +367,16 @@ const styles = StyleSheet.create({
   outerbox: {
     paddingLeft: 10,
     paddingRight: 10,
-    
   },
   bodybox: {
     width: '100%',
     padding: 20,
-    paddingBottom:0,
+    paddingBottom: 0,
     backgroundColor: '#fff',
     justifyContent: 'center',
     borderRadius: 20,
     top: 10,
     height: 'auto',
-    
   },
   headname: {
     fontSize: 20,
@@ -303,7 +401,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   dosagestyle: {
-    right: 20,
     top: 10,
   },
 });

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-
+import { StatusBar } from 'react-native';
 import AppNav from './Navigation/AppNav';
 import AuthProvider from './Context/AuthContext';
 import { loadFonts } from './src/screens/fontLoader';
@@ -15,7 +15,9 @@ const App = () => {
   }, []);
   
   return (
+
     <AuthProvider>
+      <StatusBar/>
       <AppNav />
     </AuthProvider>
   );

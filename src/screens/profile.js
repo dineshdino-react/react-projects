@@ -5,7 +5,7 @@ const Profile = () => {
   return (
     <View style={styles.container}>
      <LottieView style={{height:200,width:200,top:16}}
-        source={require('../images/profile3.json')} 
+        source={require('../images/animate.json')} 
         autoPlay
         loop
       />

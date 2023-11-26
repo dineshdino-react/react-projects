@@ -101,7 +101,10 @@ const generateSecretKey = () => {
 
 const secretkey = generateSecretKey();
 
-//endpoint of the application
+
+
+
+//endpoint of the login application
  
 
 
@@ -241,6 +244,7 @@ app.post('/patients', async (req, res) => {
       age,
       gender,
       treatmentType,
+      haemoglobin,
       bloodGroup,
       mobile,
       height,
@@ -254,6 +258,7 @@ app.post('/patients', async (req, res) => {
       age,
       gender,
       treatmentType,
+      haemoglobin,
       bloodGroup,
       mobile,
       height,
@@ -284,6 +289,7 @@ app.get('/patients', async (req, res) => {
 //add drug api
 
 app.post('/drugs', async (req, res) => {
+  
   try {
     const {
       drugname,
@@ -292,11 +298,21 @@ app.post('/drugs', async (req, res) => {
       dosage,
       fataldosage,
     } = req.body;
+    const { min, max } = dosage;
     const newDrug = new Drugs({ 
      drugname,
      category,
      agegroup,
-     dosage,
+     dosage: {
+      min: {
+        value: min.value,
+        unit: min.unit,
+      },
+      max: {
+        value: max.value,
+        unit: max.unit,
+      },
+    },
      fataldosage,
     })
       console.log(newDrug);

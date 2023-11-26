@@ -24,6 +24,12 @@ const Register = new mongoose.Schema({
         type:Number,
         required:true,
     },
+    haemoglobin:{
+        type:Number,
+        required:true,
+        min:0,
+        max:20
+    },
     bloodGroup:{
         type:String,
         required:true,

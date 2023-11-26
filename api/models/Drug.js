@@ -12,16 +12,38 @@ const Drug = new mongoose.Schema({
         type:String,
         required:true,
     },
-    dosage:{
-        type:Number,
-        required:true,
+    dosage: {
+    min: {
+      value: {
+        type: Number,
+        required: true,
+      },
+      unit: {
+        type: String,
+        required: true,
+      },
     },
+    max: {
+      value: {
+        type: Number,
+        required: true,
+      },
+      unit: {
+        type: String,
+        required: true,
+      },
+    },
+  },
     fataldosage:{
-        type:Number,
-        required:true,
-    },
-    
-    
+      value: {
+        type: Number,
+        required: true,
+      },
+      unit: {
+        type: String,
+        required: true,
+      },
+    },   
 })
 const Drugs = mongoose.model("drug",Drug);
 module.exports = Drugs;

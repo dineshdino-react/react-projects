@@ -5,10 +5,17 @@ import {
   StatusBar,
   SafeAreaView,
   TouchableOpacity,
+  Alert,
+  Linking,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import PropTypes from 'prop-types';
-
+import {printToFileAsync} from 'expo-print';
+import {shareAsync} from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
+import * as IntentLauncher from 'expo-intent-launcher';
+import ExportIcon from 'react-native-vector-icons/Ionicons';
+import { DESTRUCTION } from 'dns';
 const PatientDrugDetail = ({route}) => {
   const {patient} = route.params;
   const {drug} = route.params;
@@ -16,6 +23,66 @@ const PatientDrugDetail = ({route}) => {
   const [calculationType, setCalculationType] = useState('normal');
   const [fluidEstimation, setFluidEstimation] = useState(null);
   const [activeButton, setActiveButton] = useState(null);
+
+  //doc share
+  const handlePrint = async () => {
+    Alert.alert(`Download ${patient.name} report PDF`, 'Are you sure?', [
+      {
+        text: 'Cancel',
+      },
+      {
+        text: 'OK',
+        onPress: async () => {
+          // Print logic
+          const pdfTitle = `${patient.name.replace(/\s+/g, ' ')}Drug Details-Report.pdf`;
+          const html = `
+          <html>
+            <head>
+            <title>${pdfTitle}</title>
+            </head>
+            <body>
+              <h1 style={{color:"red"}}>Patient Drug Details Report</h1>
+              <p>Patient Name: ${patient.name}</p>
+              <p>Age: ${patient.age}</p>
+              <p>Gender: ${patient.gender}</p>
+              <p>Haemoglobin: ${patient.haemoglobin}</p>
+              <p>Weight: ${patient.weight} kg</p>
+              <p>Height: ${patient.height}</p>
+
+              <h2>Drug Details</h2>
+              <p>Drug Name: ${drug.drugname}</p>
+              <!-- Add more drug details as needed -->
+            </body>
+          </html>
+        `;
+
+          try {
+            console.log('HTML Content:', html);
+            const pdf = await printToFileAsync({
+              
+              html: html,
+              base64: false,
+            });
+            console.log('Print to File Response:', pdf);
+                 // Extract patient name from the route params
+          const patientName = patient.name.replace(/\s+/g, ' '); // Replace spaces with underscores
+          const filename = `${patientName}_Drug_Details_Report.pdf`;
+          const newUri = `${FileSystem.documentDirectory}${filename}`;
+          await FileSystem.moveAsync({
+            from: pdf.uri,
+            to: newUri,
+          });
+            await shareAsync(newUri);
+            const pdfUri = pdf.uri;
+
+            console.log(`PDF saved at ${pdfUri}`);
+          } catch (error) {
+            console.error('Error generating PDF', error);
+          }
+        },
+      },
+    ]);
+  };
 
   const handleCalculate = () => {
     const resultMin = calculate(drug.dosage.min.value);
@@ -142,6 +209,7 @@ const PatientDrugDetail = ({route}) => {
       const secondhalfhour = hours / 2 / 2;
       const thirdspaceloss = 3 * weight;
       const firsthour = halfhour + fluidEstimation + thirdspaceloss;
+
       const secondhour = secondhalfhour + fluidEstimation + thirdspaceloss;
       return (
         <>
@@ -155,15 +223,18 @@ const PatientDrugDetail = ({route}) => {
           </View>
           <View style={styles.calcbox}>
             <Text style={styles.textcontainer}>
-              1st hour = {halfhour} + {fluidEstimation} + {thirdspaceloss} ={' '}
-              <Text style={styles.color}>{firsthour}</Text>
+              1st hour = {halfhour.toFixed(1)} + {fluidEstimation} +{' '}
+              {thirdspaceloss} ={' '}
+              <Text style={styles.color}>{firsthour.toFixed(1)}</Text>
             </Text>
             <Text style={styles.textcontainer}>
-              2nd hour = {secondhalfhour} + {fluidEstimation} + {thirdspaceloss}{' '}
-              = <Text style={styles.color}>{secondhour}</Text>
+              2nd hour = {secondhalfhour.toFixed(1)} + {fluidEstimation} +{' '}
+              {thirdspaceloss} ={' '}
+              <Text style={styles.color}>{secondhour.toFixed(1)}</Text>
             </Text>
             <Text style={styles.textcontainer}>
-              3rd hour = <Text style={styles.color}> {secondhour}</Text>
+              3rd hour ={' '}
+              <Text style={styles.color}> {secondhour.toFixed(1)}</Text>
             </Text>
           </View>
         </>
@@ -172,7 +243,7 @@ const PatientDrugDetail = ({route}) => {
       const startinghaemoglobin = patient.haemoglobin;
       let percentagereduction;
       if (patient.haemoglobin <= 10) {
-        percentagereduction = 10;
+        percentagereduction = 0.1;
       } else {
         percentagereduction = 0.2;
       }
@@ -233,7 +304,20 @@ const PatientDrugDetail = ({route}) => {
       <View style={styles.outerbox}>
         <View style={styles.bodybox}>
           <View style={styles.headercontent}>
-            <Text style={styles.headname}>Patient Drug Details</Text>
+            <View style={{flexDirection: 'row'}}>
+              <Text style={styles.headname}>Patient Drug Details</Text>
+              <TouchableOpacity >
+              <ExportIcon
+                style={{left: 120}}
+                name="md-download"
+                size={25}
+                onPress={handlePrint}
+              />
+              <Text style={{left:112}}>Export</Text>
+              </TouchableOpacity>
+              
+            </View>
+
             <View style={styles.whitebox}>
               <View style={styles.listbox}>
                 <View style={styles.listitem}>

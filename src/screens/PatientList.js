@@ -81,7 +81,7 @@ const PatientList = ({navigation}) => {
     return () => {
       socket.disconnect();
     };
-  }, [doctorID]);
+  }, []);
   
 
   const onRefresh = async () => {

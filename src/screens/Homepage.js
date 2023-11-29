@@ -1,56 +1,99 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  FlatList,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SVGImg from '../images/img1.svg';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import ParallaxCarousel from './Parallaxlayers';
-import { useFocusEffect } from '@react-navigation/native';
-
-const Homepage = ({ navigation }) => {
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {API_SERVER_URL} from './config';
+import axios from 'axios';
+const Homepage = React.memo(({navigation}) => {
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [doctorID, setDoctorID] = useState(null); // Move this line here
 
-  const fetchRecentlyViewed = async () => {
-    try {
-      const recentlyViewedData = await AsyncStorage.getItem('recentlyViewed');
-      if (recentlyViewedData) {
-        const recentlyViewedPatients = JSON.parse(recentlyViewedData);
-         // Sort the array based on the time difference in ascending order
-         recentlyViewedPatients.sort((a, b) => {
-          const timeDifferenceA = Math.floor((currentTime - new Date(a.timestamp)) / (1000 * 60));
-          const timeDifferenceB = Math.floor((currentTime - new Date(b.timestamp)) / (1000 * 60));
-          return timeDifferenceA - timeDifferenceB;
-        });
-        setRecentlyViewed(recentlyViewedPatients);
+  useEffect(() => {
+    const fetchRecentlyViewed = async () => {
+      
+      try {
+        const token = await AsyncStorage.getItem('authtoken');
+        if (token) {
+          
+          const response = await axios.get(`${API_SERVER_URL}/user`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          console.log('Doctor ID:', response.data.doctorID);
+          const doctorID = response.data.doctorID;
+          setDoctorID(doctorID);
+
+          const recentlyViewedData = await AsyncStorage.getItem(
+            'recentlyViewed',
+          );
+          if (recentlyViewedData && doctorID) {
+            const recentlyViewedPatients = JSON.parse(recentlyViewedData);
+
+            const response = await axios.get(
+              `${API_SERVER_URL}/patients?doctorID=${doctorID}`,
+            );
+            const patientList = response.data;
+
+            const validRecentlyViewed = recentlyViewedPatients.filter(
+              recentPatient =>
+                patientList.some(
+                  patient =>
+                    patient._id === recentPatient._id && !patient.isDeleted,
+                ),
+            );
+
+            const sortedData = validRecentlyViewed.sort((a, b) => {
+              const timeDifferenceA = Math.floor(
+                (currentTime - new Date(a.timestamp)) / (1000 * 60),
+              );
+              const timeDifferenceB = Math.floor(
+                (currentTime - new Date(b.timestamp)) / (1000 * 60),
+              );
+              return timeDifferenceA - timeDifferenceB;
+            });
+
+            setRecentlyViewed(sortedData);
+            
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching recently viewed patients:', error);
       }
-    } catch (error) {
-      console.error('Error fetching recently viewed patients:', error);
-    }
-  };
+    };
 
-  const intervalId = setInterval(() => {
-    setCurrentTime(new Date());
-  }, 1000);
+    const intervalId = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 5000);
 
-  // Use useFocusEffect to refetch the recently viewed patients when the screen gains focus
-  // useFocusEffect(() => {
-  //   fetchRecentlyViewed();
+    fetchRecentlyViewed();
 
-  //   // Clear the interval when the component is unmounted
-  //  
-  // });
+    return () => clearInterval(intervalId);
+  }, []);
 
-
-
-  // Use useFocusEffect to refetch the recently viewed patients when the screen gains focus
-  useFocusEffect(
-    useCallback(() => {
-      fetchRecentlyViewed();
-      return () => clearInterval(intervalId);
-     }, [])
+  const renderRecentlyViewedItem = ({item}) => (
+    <TouchableOpacity
+      style={styles.recentlyViewedItem}
+      onPress={() => navigation.navigate('PatientDetails', {patient: item})}>
+      <View style={styles.time}>
+        <Text style={styles.recentlyViewedItemText}>{item.name}</Text>
+        <Text style={styles.timestamp}>
+          {getTimeDifference(new Date(item.timestamp).toISOString())}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 
-  const getTimeDifference = (timestamp) => {
+  const getTimeDifference = timestamp => {
     try {
       const viewedTime = new Date(timestamp);
 
@@ -58,14 +101,23 @@ const Homepage = ({ navigation }) => {
         throw new Error(`Invalid timestamp: ${timestamp}`);
       }
 
-      const timeDifference = Math.floor((currentTime - viewedTime) / (1000 * 60));
+      const timeDifferenceInMinutes = Math.floor(
+        (currentTime - viewedTime) / (1000 * 60),
+      );
 
-      if (timeDifference < 1) {
+      if (timeDifferenceInMinutes < 1) {
         return 'just now';
-      } else if (timeDifference === 1) {
+      } else if (timeDifferenceInMinutes === 1) {
         return '1 min ago';
+      } else if (timeDifferenceInMinutes < 60) {
+        return `${timeDifferenceInMinutes} mins ago`;
       } else {
-        return `${timeDifference} mins ago`;
+        const timeDifferenceInHours = Math.floor(timeDifferenceInMinutes / 60);
+        if (timeDifferenceInHours === 1) {
+          return '1 hour ago';
+        } else {
+          return `${timeDifferenceInHours} hours ago`;
+        }
       }
     } catch (error) {
       console.error('Error calculating time difference:', error);
@@ -73,80 +125,73 @@ const Homepage = ({ navigation }) => {
     }
   };
 
-  const renderRecentlyViewedItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.recentlyViewedItem}
-      onPress={() => navigation.navigate('PatientDetails', { patient: item })}
-    >
-      <View style={styles.time}>
-      <Text style={styles.recentlyViewedItemText}>{item.name}</Text>
-      <Text style={styles.timestamp}>{getTimeDifference(new Date(item.timestamp).toISOString())}</Text>
-      </View>
-     
-    </TouchableOpacity>
-  );
-
-
   return (
-    
     <SafeAreaView>
       <View style={styles.homescreen}>
         <View style={styles.header}>
-         <SVGImg style={styles.img2} /> 
-          <TouchableOpacity onPress={()=>navigation.openDrawer()}>
-          <Image style={styles.img3} source={require('../images/op.png')} />
+          <SVGImg style={styles.img2} />
+          <TouchableOpacity onPress={() => navigation.openDrawer()}>
+            <Image
+              style={styles.img3}
+              source={require('../images/op.png')}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.body}>
-          <View style={styles.upperpart}>
-              {/* <View style={{top:30}}><ParallaxCarousel /></View> */}
-                
-          </View>
-         
+          <View style={styles.upperpart}>{/* Your content goes here */}</View>
         </View>
-        
       </View>
-       {/* Recently Viewed Patients */}
-       <View style={styles.recentlyViewedContainer}>
-          <Text style={styles.recentlyViewedTitle}>Recently Viewed Patients</Text>
-          <FlatList
-            data={recentlyViewed}
-            keyExtractor={(item) => item._id.toString()}
-            renderItem={renderRecentlyViewedItem}
-          />
-        </View>
+
+      {/* Recently Viewed Patients */}
+      <View style={styles.recentlyViewedContainer}>
+        <Text style={styles.recentlyViewedTitle}>Recently Viewed Patients</Text>
+        <FlatList
+          data={recentlyViewed}
+          keyExtractor={item => item._id.toString()}
+          renderItem={renderRecentlyViewedItem}
+          removeClippedSubviews={true}
+        />
+      </View>
     </SafeAreaView>
-   
-   
   );
-};
+});
 export default Homepage;
 const styles = StyleSheet.create({
-  time:{
-    flex:1,
-    justifyContent:"space-between",
-    flexDirection:"row",
-    padding:10,
-    paddingLeft:30,
-    paddingRight:30,
-    
+  recentlyViewedTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
-  imagebox:{
-   height:350,
-   width:"100%",
-   overflow:'hidden',
-   justifyContent:"center",
-   alignContent:"center",
-   backgroundColor:"#fff",
-   top:20,
-   padding:30,
-   borderRadius:20,
-   
+  recentlyViewedContainer: {
+    padding: 20,
+    backgroundColor: '#fff',
+    margin: 10,
+    borderRadius: 20,
   },
-  imagelogo:{
-    width:300,
-    height:338,
+  timestamp: {
+    color: 'red',
+  },
+  time: {
+    flex: 1,
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    paddingTop: 15,
+  },
+  imagebox: {
+    height: 350,
+    width: '100%',
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignContent: 'center',
+    backgroundColor: '#fff',
+    top: 20,
+    padding: 30,
+    borderRadius: 20,
+  },
+  imagelogo: {
+    width: 300,
+    height: 338,
   },
   arr: {
     top: 57,

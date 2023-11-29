@@ -11,6 +11,7 @@ import {
   FlatList,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Heartbeat from './heartbeat';
 import React from 'react';
 import {useState, useEffect} from 'react';
 import {FontAwesome} from '@expo/vector-icons';
@@ -138,7 +139,8 @@ const PatientDetails = ({route}) => {
       <View style={styles.outerbox}>
         <View style={styles.bodybox}>
           <View style={styles.headercontent}>
-            <Text style={styles.headname}>Patient Details</Text>
+            <Text style={styles.headname}>Patient Details<Heartbeat/></Text>
+           
             <View style={styles.whitebox}>
               <View style={styles.listbox}>
                 <View style={styles.listitem}>
@@ -153,6 +155,7 @@ const PatientDetails = ({route}) => {
                   <Text style={styles.tcontent}>
                     {patient.name.toUpperCase()}
                   </Text>
+                  
                   <Text style={{color:"#f44336"}}>{patient.treatmentType}</Text>
                 </View>
                 <View

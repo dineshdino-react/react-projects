@@ -73,6 +73,7 @@ function BottomTabs() {
             ),
         }}
       />
+      
       <Tab.Screen
         name="DrugList"
         component={DrugList}

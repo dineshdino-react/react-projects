@@ -2,6 +2,7 @@ import {useState, useEffect} from 'react';
 import socketIOClient from 'socket.io-client';
 import PatientDetails from './PatientDetails';
 import NoResultsIndicator from './NoResultsIndicator';
+
 import {ActivityIndicator} from 'react-native';
 import PatientDrugDetail from './PatientDrugDetail';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -134,7 +135,7 @@ const PatientList = ({navigation}) => {
                 <TouchableOpacity
                   style={styles.listbox}
                   onPress={() =>
-                    navigation.navigate('PatientDetails', {patient: item})
+                    navigation.push('PatientDetails', {patient: item})
                   }>
                   <View style={styles.listitem}>
                     <View style={styles.cir}>
@@ -175,7 +176,7 @@ export default function Dino() {
       initialRouteName="PatientList"
       screenOptions={{headerShown: true}}>
       <Stack.Screen name="PatientList" component={PatientList} />
-      <Stack.Screen name="PatientDetails" component={PatientDetails} />
+      <Stack.Screen name="PatientDetails" component={PatientDetails}  />
       <Stack.Screen name="PatientDrugDetail" component={PatientDrugDetail} />
     </Stack.Navigator>
   );

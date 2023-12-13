@@ -9,11 +9,12 @@ import {
   SafeAreaView,
   TouchableOpacity,
   FlatList,
+ 
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Heartbeat from './heartbeat';
+
 import React from 'react';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useLayoutEffect} from 'react';
 import {FontAwesome} from '@expo/vector-icons';
 import {Fontisto} from '@expo/vector-icons';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -34,6 +35,17 @@ const PatientDetails = ({route}) => {
 
   const navigation = useNavigation();
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      tabBarVisible: false,
+    });
+    return () => {
+      // Reset the tabBarVisible when the component is unmounted
+      navigation.setOptions({
+        tabBarVisible: true,
+      });
+    };
+  }, [navigation]);
 
   useEffect(() => {
     // Update recently viewed patients list in AsyncStorage
@@ -139,7 +151,7 @@ const PatientDetails = ({route}) => {
       <View style={styles.outerbox}>
         <View style={styles.bodybox}>
           <View style={styles.headercontent}>
-            <Text style={styles.headname}>Patient Details<Heartbeat/></Text>
+            <Text style={styles.headname}>Patient Details</Text>
            
             <View style={styles.whitebox}>
               <View style={styles.listbox}>
@@ -366,6 +378,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     left: 15,
+    width:150,
   },
   outerbox: {
     paddingLeft: 10,

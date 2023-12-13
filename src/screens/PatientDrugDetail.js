@@ -6,16 +6,16 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
-  Linking,
+
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import PropTypes from 'prop-types';
 import {printToFileAsync} from 'expo-print';
 import {shareAsync} from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
-import * as IntentLauncher from 'expo-intent-launcher';
 import ExportIcon from 'react-native-vector-icons/Ionicons';
-import { DESTRUCTION } from 'dns';
+
+
 const PatientDrugDetail = ({route}) => {
   const {patient} = route.params;
   const {drug} = route.params;
@@ -23,35 +23,83 @@ const PatientDrugDetail = ({route}) => {
   const [calculationType, setCalculationType] = useState('normal');
   const [fluidEstimation, setFluidEstimation] = useState(null);
   const [activeButton, setActiveButton] = useState(null);
-
   //doc share
   const handlePrint = async () => {
-    Alert.alert(`Download ${patient.name} report PDF`, 'Are you sure?', [
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString();
+    const formattedTime = currentDate.toLocaleTimeString();
+    Alert.alert(`Download ${patient.name} report`, 'Are you sure?', [
       {
         text: 'Cancel',
+        style: 'destructive',
       },
       {
-        text: 'OK',
+        text: 'Download',
+        style: 'default',
         onPress: async () => {
           // Print logic
-          const pdfTitle = `${patient.name.replace(/\s+/g, ' ')}Drug Details-Report.pdf`;
+          const pdfTitle = `${patient.name.replace(
+            /\s+/g,
+            ' ',
+          )}Drug Details-Report.pdf`;
+
           const html = `
           <html>
             <head>
-            <title>${pdfTitle}</title>
+              <style>
+                body {
+                  font-family: 'Arial, sans-serif';
+                  color: #333;                 
+                }
+                h1 {
+                  color: #ff7373;
+                }
+                h2 {
+                  color: #333;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+                }
+                p {
+                  margin-bottom: 10px;
+                }
+                .patient-details {
+                  font-weight: bold;
+                }
+                .drug-details {
+                  margin-top: 20px;
+                } 
+                .fatal-dosage {
+                  font-weight: bold;
+                  color: red;
+                }
+              </style>
+              <title>${pdfTitle}</title>
             </head>
             <body>
-              <h1 style={{color:"red"}}>Patient Drug Details Report</h1>
-              <p>Patient Name: ${patient.name}</p>
-              <p>Age: ${patient.age}</p>
-              <p>Gender: ${patient.gender}</p>
-              <p>Haemoglobin: ${patient.haemoglobin}</p>
-              <p>Weight: ${patient.weight} kg</p>
-              <p>Height: ${patient.height}</p>
-
-              <h2>Drug Details</h2>
-              <p>Drug Name: ${drug.drugname}</p>
-              <!-- Add more drug details as needed -->
+              <h1>Patient Drug Details Report</h1>
+              <p>Exported on: ${formattedDate} at ${formattedTime}</p>
+              <div class="patient-details">
+                <p>Patient Name: ${patient.name}</p>
+                <p>Age: ${patient.age}</p>
+                <p>Gender: ${patient.gender}</p>
+                <p>Haemoglobin: ${patient.haemoglobin}</p>
+                <p>Weight: ${patient.weight} kg</p>
+                <p>Height: ${patient.height}</p>
+              </div>
+              <h2 class="drug-details">Drug Details</h2>
+              <div class="drug-details">
+                <p>Drug Name: ${drug.drugname}</p>
+                <p>Min drug-dosage : ${drug.dosage.min.value} = ${
+            calculatedValue && calculatedValue.min
+          } ${drug.dosage.min.unit}</p>
+                <p>Max drug-dosage : ${drug.dosage.max.value} = ${
+            calculatedValue && calculatedValue.max
+          } ${drug.dosage.max.unit}</p>
+              </div>
+    
+              <div class="fatal-dosage">
+                <p>Fatal Dosage : ${drug.fataldosage.value} ${
+            drug.fataldosage.unit
+          }</p>
+              </div>
             </body>
           </html>
         `;
@@ -59,19 +107,19 @@ const PatientDrugDetail = ({route}) => {
           try {
             console.log('HTML Content:', html);
             const pdf = await printToFileAsync({
-              
               html: html,
               base64: false,
             });
+
             console.log('Print to File Response:', pdf);
-                 // Extract patient name from the route params
-          const patientName = patient.name.replace(/\s+/g, ' '); // Replace spaces with underscores
-          const filename = `${patientName}_Drug_Details_Report.pdf`;
-          const newUri = `${FileSystem.documentDirectory}${filename}`;
-          await FileSystem.moveAsync({
-            from: pdf.uri,
-            to: newUri,
-          });
+            // Extract patient name from the route params
+            const patientName = patient.name.replace(/\s+/g, ' ');
+            const filename = `${patientName}_Drug_Details_Report.pdf`;
+            const newUri = `${FileSystem.documentDirectory}${filename}`;
+            await FileSystem.moveAsync({
+              from: pdf.uri,
+              to: newUri,
+            });
             await shareAsync(newUri);
             const pdfUri = pdf.uri;
 
@@ -81,8 +129,33 @@ const PatientDrugDetail = ({route}) => {
           }
         },
       },
+      {cancelable: false},
     ]);
   };
+   
+
+  //handle notification 
+  // const showNotification = async () => {
+  //   try {
+  //     const notification = await Notifee.displayNotification({
+  //       title: 'Export Report',
+  //       body: 'Report has been exported successfully!',
+  //       android: {
+  //         channelId: 'export-channel-id', // Make sure to create a channel
+  //       },
+  //       ios:{
+  //         sound: 'default', // Specify the notification sound
+  //       badge: true, // Show the badge number on the app icon
+  //       }
+  //     });
+  //     console.log('Notification displayed:', notification);
+  //   } catch (error) {
+  //     console.error('Error displaying notification:', error);
+  //   }
+  // };
+
+
+
 
   const handleCalculate = () => {
     const resultMin = calculate(drug.dosage.min.value);
@@ -284,6 +357,7 @@ const PatientDrugDetail = ({route}) => {
         </>
       );
     }
+
     // Add more conditions for other calculation types if needed
   };
   const handleFluidCalculation = () => {
@@ -297,7 +371,7 @@ const PatientDrugDetail = ({route}) => {
     setCalculationType('bloodLoss');
     setActiveButton('bloodLoss');
   };
-
+ 
   return (
     <SafeAreaView>
       <StatusBar />
@@ -306,16 +380,15 @@ const PatientDrugDetail = ({route}) => {
           <View style={styles.headercontent}>
             <View style={{flexDirection: 'row'}}>
               <Text style={styles.headname}>Patient Drug Details</Text>
-              <TouchableOpacity >
-              <ExportIcon
-                style={{left: 120}}
-                name="md-download"
-                size={25}
-                onPress={handlePrint}
-              />
-              <Text style={{left:112}}>Export</Text>
+              <TouchableOpacity>
+                <ExportIcon
+                  style={{left: 110}}
+                  name="md-download"
+                  size={25}
+                 onPress={handlePrint}
+                />
+                <Text  style={{left: 80, fontSize:12}}>(Export report)</Text>
               </TouchableOpacity>
-              
             </View>
 
             <View style={styles.whitebox}>
@@ -384,7 +457,7 @@ const PatientDrugDetail = ({route}) => {
                   style={styles.btnstyle1}
                   onPress={handleFluidCalculation}>
                   <View>
-                    <Text style={[styles.btn]}>Fluid Calculation</Text>
+                    <Text style={[styles.btn]}>Fluid</Text>
                     {activeButton === 'fluid' && (
                       <View style={styles.activeDot2} />
                     )}
@@ -394,12 +467,13 @@ const PatientDrugDetail = ({route}) => {
                   style={styles.btnstyle1}
                   onPress={handleBloodLossCalculation}>
                   <View>
-                    <Text style={styles.btn}>Blood Loss Calculation</Text>
+                    <Text style={styles.btn}>Blood Loss</Text>
                   </View>
                   {activeButton === 'bloodLoss' && (
                     <View style={styles.activeDot3} />
                   )}
                 </TouchableOpacity>
+               
               </View>
               <View style={styles.togglebox}>
                 <View style={styles.bodyhead}>
@@ -420,6 +494,9 @@ const PatientDrugDetail = ({route}) => {
 export default PatientDrugDetail;
 
 const styles = StyleSheet.create({
+  alertContainer: {
+    backgroundColor: 'white',
+  },
   activeDot: {
     width: 10,
     height: 10,
@@ -436,7 +513,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     position: 'absolute',
     top: 3,
-    left: 110,
+    right:70,
   },
   activeDot3: {
     width: 10,
@@ -444,9 +521,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#fff',
     position: 'absolute',
-    top: 17,
-    left: 130,
+    top: 10,
+    right:140
   },
+
   textcontainer: {
     marginVertical: 10,
   },
@@ -512,8 +590,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff7373',
   },
   btnstyle1: {
-    width: '48%',
-    padding: 5,
+    width: '50%',
+    padding: 8,
+    marginRight:10,
+    marginLeft:10,
     justifyContent: 'center',
     alignItems: 'center',
     paddingLeft: 20,

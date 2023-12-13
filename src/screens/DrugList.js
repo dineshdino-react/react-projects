@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   FlatList,
   RefreshControl,
+  Image
 } from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {FontAwesome} from '@expo/vector-icons';
@@ -106,12 +107,21 @@ const DrugList = ({navigation}) => {
           {isSearchFocused ? null : (
             <View style={styles.infocontent}>
               <View style={styles.rside}>
+                <View style={{flexDirection:"column"}}>
                 <Text style={styles.uppertxt}>About Drugs</Text>
                 <Text style={styles.lowertxt}>
                   These anesthesia drugs are provided for the patients; they
                   will be effective as soon as possible.
                 </Text>
+                </View>
+               
+                <Image
+              style={{height:100,width:100, position:"absolute", right:0}}
+              source={require('../images/pills.png')}
+                />
               </View>
+              
+              
             </View>
           )}
         </View>
@@ -178,6 +188,11 @@ export default function Druglist() {
 }
 
 const styles = StyleSheet.create({
+  rside:{
+   
+   flexDirection:"row"
+
+  },
   adddrugtxt: {},
   ciredit: {
     height: 30,
@@ -210,7 +225,7 @@ const styles = StyleSheet.create({
       android: {lineHeight: 15, fontSize: 12},
       ios: {lineHeight: 20, fontSize: 14},
     }),
-    width: '65%',
+    width: '35%',
     paddingTop: 10,
   },
   infocontent: {

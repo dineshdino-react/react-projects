@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff7373',
     alignItems: 'center',
     justifyContent: 'center',
-    top: 35,
+    top: 25,
   },
   disabledSaveButton: {
     width: '100%',
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#d9d9d9',
     alignItems: 'center',
     justifyContent: 'center',
-    top: 35,
+    top: 25,
   },
   start: {
     color: '#fff',

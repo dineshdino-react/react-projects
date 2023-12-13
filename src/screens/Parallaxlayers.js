@@ -17,10 +17,33 @@ const ParallaxLayer = () => {
   const autoplayRef = useRef(null);
   const baseOptions = {
     vertical: false,
-    width: PAGE_WIDTH * 0.8,
-    height: PAGE_HEIGHT * 0.6,
+    width: PAGE_WIDTH * 0.9,
+    height: PAGE_HEIGHT * 0.1,
   };
-  const emptyData = Array.from({ length: 4 }).fill({});
+
+  const data = [
+    {
+      heading: "Drug calculation",
+      image: require("../images/pills.png"),
+      description: "Patient drug value can be calculated according to the BMI !",
+     
+    },
+    {
+      heading: "Fluid calculation",
+      image: require("../images/pills.png"),
+      description: "Description for Slide 2 ",
+    },
+    {
+      heading: "Blood Loss Calculation",
+      image: require("../images/pills.png"),
+      description: "Description for Slide 3",
+    },
+    {
+      heading: "",
+      image: require("../images/pills.png"),
+      description: "Description for Slide 4",
+    },
+  ];
 
   useEffect(() => {
     if (isAutoplaying && autoplayRef.current) {
@@ -53,11 +76,12 @@ const ParallaxLayer = () => {
           parallaxScrollingScale: 0.9,
           parallaxScrollingOffset: 50,
         }}
-        data={emptyData}
+        data={data}
         renderItem={({ index }) => (
           <ParallaxSlide
             index={index}
             progressValue={progressValue}
+            data={data}
             autoplayRef={autoplayRef}
           />
         )}
@@ -66,7 +90,7 @@ const ParallaxLayer = () => {
   );
 };
 
-const ParallaxSlide = ({ index, progressValue, autoplayRef }) => {
+const ParallaxSlide = ({ index, progressValue, data, autoplayRef }) => {
   const animatedOpacity = useSharedValue(0);
   const animatedScale = useSharedValue(1); // Set initial scale to 1
 
@@ -87,7 +111,7 @@ const ParallaxSlide = ({ index, progressValue, autoplayRef }) => {
     const scale = interpolate(
       progressValue,
       [index - 1, index, index + 1],
-      [0.8, 1, 0.8],
+      [1, 1, 1],
       Extrapolate.CLAMP
     );
     return {
@@ -98,16 +122,14 @@ const ParallaxSlide = ({ index, progressValue, autoplayRef }) => {
 
   return (
     <Animated.View style={[styles.slide, animStyle]}>
-      <Text style={styles.heading}>Heading {index + 1}</Text>
+      <Text style={styles.heading}>{data[index].heading}</Text>
       <View style={styles.imageContainer}>
-        <Image
-          source={require("../images/img.png")}
-          style={styles.image}
-        />
+        <Image source={data[index].image} style={styles.image} />
       </View>
-      <Text style={styles.description}>
-        <Text style={styles.boldText}>Bold Text:</Text> Normal Text Description
-      </Text>
+      <View style={{width:180, paddingTop:10}}>
+      <Text style={styles.description}>{data[index].description}</Text>
+      </View>
+     
     </Animated.View>
   );
 };
@@ -115,19 +137,24 @@ const ParallaxSlide = ({ index, progressValue, autoplayRef }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingLeft:10,
+    paddingRight:10,
     justifyContent: "center",
     alignItems: "center",
   },
   carousel: {
-    width: PAGE_WIDTH * 0.8,
+    width: PAGE_WIDTH * 0.9,
     height: PAGE_HEIGHT * 0.6,
   },
   slide: {
     backgroundColor: "#fff",
     borderRadius: 20,
     padding: 20,
+    height:150,
+    justifyContent:"center", 
+   
     shadowColor: "black",
-    shadowOffset: { width: 2, height: 6 },
+    shadowOffset: { width: 1, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
   },
@@ -138,18 +165,21 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: "absolute",
-    top: 10,
+    top: 20,
     right: 10,
+    
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 100,
+    height: 100,
     borderRadius: 25,
+    
   },
   description: {
-    marginTop: 10,
-    fontSize: 14,
+    paddingBottom:0,
+    fontSize: 16,
     color: "black",
+    opacity:0.6
   },
   boldText: {
     fontWeight: "bold",
